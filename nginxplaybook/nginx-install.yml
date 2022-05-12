@@ -1,0 +1,16 @@
+---
+- name: Setup Personal server
+  hosts: all
+  become: true
+
+  tasks: 
+    - name: install nginx 
+      apt:
+        name: nginx
+        state: latest
+        update_cache: yes
+
+    - name: restart nginx
+      service:
+        name=nginx
+        state=restarted
