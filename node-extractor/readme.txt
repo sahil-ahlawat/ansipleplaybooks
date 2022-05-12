@@ -45,5 +45,7 @@ Step 4: Run ansible playbook
 ansible-playbook -vvv node_exporter.yml —extra-vars=”host=node_exp”
 or
 ansible-playbook -vvv node_exporter.yml --extra-vars ”host=node_exp”
+or
+ansible-playbook -vvv node_exporter.yml -e ”host=node_exp”
 
 Step 5: Test the service http://<ip_address>:9100/metrics
