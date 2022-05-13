@@ -40,12 +40,19 @@ ansible-playbook -vvv node_exporter.yml — extra-vars=”host=node_exp”
 after this go to http://<ip_address>:9100/metrics to verify if no errors
 
 Step 4: Run ansible playbook 
+# first dry run the ansible to check the syntex
+ansible-playbook -vvv node_exporter.yml -e ”host=node_exp” --check
 
+# after dry run is successfull follow below
 # run this following command as it is. do not change anything unles you know what you are doing
-ansible-playbook -vvv node_exporter.yml —extra-vars=”host=node_exp”
+ansible-playbook -vvv node_exporter.yml -e ”host=node_exp”
 or
 ansible-playbook -vvv node_exporter.yml --extra-vars ”host=node_exp”
 or
-ansible-playbook -vvv node_exporter.yml -e ”host=node_exp”
+ansible-playbook -vvv node_exporter.yml —extra-vars=”host=node_exp”
 
 Step 5: Test the service http://<ip_address>:9100/metrics
+
+
+
+Note: daemon_reload: enabled
