@@ -1,3 +1,5 @@
+Default Inventory Folder is /etc/ansible/hosts
+
 Prerequisites : Ansible should be installed
 
 Step 1: Create inventory (Inventory is a list of hosts to connect to) 
