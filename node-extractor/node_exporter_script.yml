@@ -1,0 +1,10 @@
+---
+- hosts: "{{ host }}"
+  become: True
+  become_user: root
+
+  tasks:
+    - name: Copy  script to remote_machine
+      template: src=/var/experiment/node_exporter/script.sh dest=/tmp/node_exporter_script.sh mode=755
+    - name: Execute script on remote_machine
+      script: sh /tmp/node_exporter_script.sh
