@@ -1,0 +1,9 @@
+{{ node_exporter_log_file }} {
+  create 640 {{ node_exporter_username }} adm
+  daily
+  rotate 7
+  missingok
+  notifempty
+  compress
+  delaycompress
+}

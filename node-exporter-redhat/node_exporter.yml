@@ -1,0 +1,87 @@
+---
+- hosts: "{{ host }}"
+  become: True
+  become_user: root
+  vars:
+    node_exporter_version: '0.18.1'
+    node_exporter_package_filename: "node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    node_exporter_from_url: 'https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/{{ node_exporter_package_filename }}'
+    node_exporter_checksum: 'sha256:b2503fd932f85f4e5baf161268854bf5d22001869b84f00fd2d1f57b51b72424'
+    node_exporter_dest_dir_parent: /opt
+    node_exporter_service_name: node_exporter
+    node_exporter_install_dir: "{{ node_exporter_dest_dir_parent }}/prometheus"
+    node_exporter_binary_path: "{{ node_exporter_install_dir }}/node_exporter"
+    node_exporter_username: node-exp
+    node_exporter_groupname: node-exp
+    node_exporter_log_file: /var/log/prometheus.log
+    node_exporter_pid_file: /var/run/node_exporter.pid
+
+  tasks:
+    - name: Abort the playbook if the OS is not supported
+      fail:
+        msg: This OS distribution + release is not supported
+      when: ansible_os_family != 'RedHat'
+        or ansible_distribution_major_version != '6'
+
+    - name: Download prometheus node exporter binary
+      get_url:
+        url: "{{ node_exporter_from_url }}"
+        checksum: "{{ node_exporter_checksum }}"
+        dest: /opt
+
+    - name: Unpack node_exporter
+      unarchive:
+        src: /opt/{{ node_exporter_package_filename }}
+        dest: /opt
+        remote_src: true
+      # should end up as /opt/node_exporter-$VERSION.linux-amd64/
+
+
+    - name: Create a simply-named dir symlink to current version
+      file:
+        state: link
+        src: /opt/node_exporter-{{ node_exporter_version }}.linux-amd64
+        dest: /opt/prometheus
+
+
+    - name: Create node_exporter group
+      group:
+        name: "{{ node_exporter_groupname }}"
+        state: present
+        system: true
+
+    - name: Create node_exporter user
+      user:
+        name: "{{ node_exporter_username }}"
+        group: "{{ node_exporter_groupname }}"
+        state: present
+        system: true
+        shell: /sbin/nologin
+
+    - name: Precipitate log file
+      copy:
+        content: ''
+        force: false
+        dest: "{{ node_exporter_log_file }}"
+        mode: '0640'
+        owner: "{{ node_exporter_username }}"
+        group: adm
+
+    - name: Configure logrotate
+      template:
+        src: templates/logrotate.j2
+        dest: /etc/logrotate.d/prometheus
+        backup: false
+
+    - name: Configure init.d script
+      template:
+        src: templates/init.d.j2
+        dest: /etc/init.d/{{ node_exporter_service_name }}
+        backup: false
+        mode: '0755'
+
+    - name: Make sure service is running and enabled at boot
+      service:
+        name: "{{ node_exporter_service_name }}"
+        state: started
+        enabled: true
